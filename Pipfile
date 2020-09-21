@@ -3,10 +3,22 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[[source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/torch_stable.html"
+verify_ssl = false
+
 [dev-packages]
 
 [packages]
 gym = "*"
+jupyterlab = "*"
+ray = {extras = ["rllib"], version = "==0.8.7"}
+torch = {version = "==1.6.0", index = "pytorch"}
+torchvision = "==0.7.0"
+ipywidgets = ">=7.5"
+plotly = "==4.10.0"
+tensorboard = "*"
 
 [requires]
 python_version = "3.8"

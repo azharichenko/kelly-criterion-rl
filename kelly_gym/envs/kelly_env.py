@@ -17,7 +17,7 @@ class KellyEnv(gym.Env, EzPickle):
   def __init__(self, starting_capital: float=25.0, prob: float=0.6):
     self.action_space = spaces.Tuple([
             spaces.Discrete(2),
-            spaces.Box(low=0.0001, high=1.0, shape=(1,))
+            spaces.Box(low=0.01, high=0.99, shape=(1,))
     ])
     self.observation_space = spaces.Box(
             low=np.array([0.0, 0.0]),
@@ -26,28 +26,34 @@ class KellyEnv(gym.Env, EzPickle):
     )
 
     self.starting_capital = 25.0
-    self.capital = starting_capital
+    self.capital = self.starting_capital
     self.heads_probability = prob
-
     self.history = [self.starting_capital]
+    self.i = 1
 
   def reset(self):
     self.capital = self.starting_capital
     self.history = [self.starting_capital]
+    self.i = 1
     return [self.capital, self.heads_probability]
 
   def step(self, action):
     done: bool = False
-    reward: int
+    reward: int = 0
     head, prop = action
-    bet = prop[0] * self.capital
+    bet = round(prop[0] * self.capital, 2)
+    cap = self.capital
+    self.i += 1
 
     if head == np.random.choice([0, 1], 1, p=[1-self.heads_probability, self.heads_probability]):
-      self.capital += bet
-      reward = 1
+      self.capital += bet 
+      reward = 1 + np.log(self.i) + np.log(self.capital)
     else:
       self.capital -= bet
-      reward = -2
+      reward = -1 - np.log(self.i) - np.log(self.capital)
+
+    if bet == 0 or bet == cap:
+      reward = -10
 
     self.capital = round(self.capital, 2)
     self.history.append(self.capital)

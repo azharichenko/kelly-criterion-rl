@@ -4,6 +4,7 @@ from gym import utils
 from gym.utils import seeding, EzPickle
 import numpy as np
 
+from collections import deque
 from random import randint
 
 import plotly.graph_objects as go
@@ -17,7 +18,7 @@ class KellyEnv(gym.Env, EzPickle):
   def __init__(self, starting_capital: float=25.0, prob: float=0.6):
     self.action_space = spaces.Tuple([
             spaces.Discrete(2),
-            spaces.Box(low=0.01, high=0.99, shape=(1,))
+            spaces.Box(low=0.00, high=1.00, shape=(1,))
     ])
     self.observation_space = spaces.Box(
             low=np.array([0.0, 0.0]),
@@ -28,36 +29,37 @@ class KellyEnv(gym.Env, EzPickle):
     self.starting_capital = 25.0
     self.capital = self.starting_capital
     self.heads_probability = prob
+    self.last_cap = deque(maxlen=5)
     self.history = [self.starting_capital]
     self.i = 1
 
   def reset(self):
     self.capital = self.starting_capital
+    self.last_cap = deque(maxlen=5)
     self.history = [self.starting_capital]
     self.i = 1
     return [self.capital, self.heads_probability]
 
   def step(self, action):
     done: bool = False
-    reward: int = 0
+    # reward: int = 0
     head, prop = action
     bet = round(prop[0] * self.capital, 2)
     cap = self.capital
     self.i += 1
 
     if head == np.random.choice([0, 1], 1, p=[1-self.heads_probability, self.heads_probability]):
-      self.capital += bet 
-      reward = 1 + np.log(self.i) + np.log(self.capital)
+      self.capital += bet
+      self.last_cap.append(prop)
     else:
       self.capital -= bet
-      reward = -1 - np.log(self.i) - np.log(self.capital)
+      self.last_cap.append(-prop)
 
-    if bet == 0 or bet == cap:
-      reward = -10
+    reward = (sum(self.last_cap) / 5.0) - 0.01
+    reward = reward[0]
 
     self.capital = round(self.capital, 2)
     self.history.append(self.capital)
-
     if  self.capital <= 0:
       done = True
 

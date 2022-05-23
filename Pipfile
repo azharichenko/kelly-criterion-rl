@@ -13,12 +13,10 @@ verify_ssl = false
 [packages]
 gym = "*"
 jupyterlab = "*"
-ray = {extras = ["rllib"], version = "==0.8.7"}
-torch = {version = "==1.6.0", index = "pytorch"}
-torchvision = "==0.7.0"
 ipywidgets = ">=7.5"
 plotly = "==4.10.0"
-tensorboard = "*"
+ray = {extras = ["rllib"], version = "*"}
+torch = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
